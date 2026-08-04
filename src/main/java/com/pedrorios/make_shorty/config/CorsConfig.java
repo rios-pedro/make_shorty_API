@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://make-shorty.vercel.app/")
+                        .allowedOrigins("https://make-shorty.vercel.app", "https://make-shorty.vercel.app/")
                         .allowedMethods("GET", "POST");
             }
         };
