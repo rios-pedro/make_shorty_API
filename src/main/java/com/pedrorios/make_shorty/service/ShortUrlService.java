@@ -32,7 +32,7 @@ public class ShortUrlService {
     private String toBase62(long id) {
         StringBuilder sb = new StringBuilder();
         while (id > 0) {
-            sb.append(CHARSET.charAt((int) (id % 62)));
+            sb.append(ALPHABET.charAt((int) (id % 62)));
             id /= 62;
         }
         return sb.reverse().toString();
