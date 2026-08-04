@@ -2,6 +2,7 @@ package com.pedrorios.make_shorty.service;
 
 import com.pedrorios.make_shorty.model.ShortUrl;
 import com.pedrorios.make_shorty.repository.ShortUrlRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,7 +14,7 @@ public class ShortUrlService {
     public ShortUrlService(ShortUrlRepository repo) {
         this.repo = repo;
     }
-
+    @Transactional
     public String shorten(String url) {
         ShortUrl su = new ShortUrl();
         su.setOriginalUrl(url);
