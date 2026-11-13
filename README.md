@@ -73,9 +73,11 @@ The app reads its settings from environment variables:
 | `SUPABASE_DB_USER`     | Database user                                | —       |
 | `SUPABASE_DB_PASSWORD` | Database password                            | —       |
 | `PORT`                 | HTTP port                                    | `8080`  |
+| `CORS_ALLOWED_ORIGINS` | Comma-separated frontend origins allowed by CORS (no trailing slash) | `https://makeshortyweb.vercel.app` |
 
-> **Supabase tip:** use the **Session pooler** connection string
-> (`jdbc:postgresql://aws-0-<region>.pooler.supabase.com:5432/postgres`, user `postgres.<project-ref>`).
+> **Supabase tip:** use the **Session pooler** connection string from *Connect* in the dashboard
+> (`jdbc:postgresql://aws-<n>-<region>.pooler.supabase.com:5432/postgres`, user `postgres.<project-ref>`).
+> Don't put the user or password inside the URL; use the separate variables.
 > The direct connection (`db.<ref>.supabase.co`) is IPv6-only and fails on hosts without IPv6, such as Render.
 
 ## Database schema
@@ -125,4 +127,10 @@ The tests mock the database, so they run without any database or environment var
 
 ## CORS
 
-Allowed origins are set in `CorsConfig`. Update them when the frontend domain changes.
+Only the origins in `CORS_ALLOWED_ORIGINS` can call the API from a browser (`GET` and `POST`).
+The default is the production frontend, [makeshortyweb.vercel.app](https://makeshortyweb.vercel.app).
+To allow another domain, set the variable instead of changing the code:
+
+```bash
+CORS_ALLOWED_ORIGINS=https://makeshortyweb.vercel.app,https://my-preview.vercel.app
+```
