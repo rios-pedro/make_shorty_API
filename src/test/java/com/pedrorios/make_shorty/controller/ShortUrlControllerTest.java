@@ -92,12 +92,30 @@ class ShortUrlControllerTest {
     }
 
     @Test
-    void redirectDatabaseErrorIsNot404() throws Exception {
+    void unexpectedErrorReturns500Json() throws Exception {
         when(service.resolve("abc")).thenThrow(new IllegalStateException("db down"));
 
-        // Sem handler para essa exceção, ela sobe (no servidor real vira 500), em vez de virar 404
-        jakarta.servlet.ServletException ex = org.junit.jupiter.api.Assertions.assertThrows(
-                jakarta.servlet.ServletException.class, () -> mvc.perform(get("/abc")));
-        org.junit.jupiter.api.Assertions.assertInstanceOf(IllegalStateException.class, ex.getCause());
+        mvc.perform(get("/abc"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("internal error"));
+    }
+
+    @Test
+    void unexpectedErrorKeepsCorsHeaders() throws Exception {
+        when(service.shorten(anyString())).thenThrow(new IllegalStateException("db down"));
+
+        mvc.perform(post("/shorten").contentType(MediaType.APPLICATION_JSON)
+                        .header("Origin", "https://makeshortyweb.vercel.app")
+                        .content("{\"url\":\"https://example.com\"}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://makeshortyweb.vercel.app"))
+                .andExpect(jsonPath("$.error").value("internal error"));
+    }
+
+    @Test
+    void springErrorsKeepTheirStatus() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/shorten"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(jsonPath("$.error").value("method not allowed"));
     }
 }
