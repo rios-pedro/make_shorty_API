@@ -1,11 +1,13 @@
 package com.pedrorios.make_shorty.controller;
 
+import com.pedrorios.make_shorty.dto.ShortenRequest;
 import com.pedrorios.make_shorty.service.ShortUrlService;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 
 @RestController
@@ -18,28 +20,16 @@ public class ShortUrlController {
     }
 
     @PostMapping("/shorten")
-    public ResponseEntity<Map<String, String>> shorten(@RequestBody Map<String, String> body) {
-        String url = body.get("url");
-        if (url == null || url.isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "url is required"));
-        }
-        if (!url.matches("^https?://.+")) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "invalid url"));
-        }
-        String code = service.shorten(url);
+    public ResponseEntity<Map<String, String>> shorten(@Valid @RequestBody ShortenRequest request) {
+        String code = service.shorten(request.url());
         return ResponseEntity.ok(Map.of("short", code));
     }
 
     @GetMapping("/{code}")
-    public void redirect(@PathVariable String code, HttpServletResponse response)
-            throws IOException {
-        try {
-            String target = service.resolve(code);
-            response.sendRedirect(target);
-        } catch (RuntimeException e) {
-            response.sendError(404);
-        }
+    public ResponseEntity<Void> redirect(@PathVariable String code) {
+        String target = service.resolve(code); // LinkNotFoundException → 404 no ApiExceptionHandler
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(target))
+                .build();
     }
 }
